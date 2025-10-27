@@ -1,0 +1,306 @@
+name: Auto Build and Release
+
+# Automatically increment version and create release on push to main;
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'
+      - '.github/**'
+      - '*.md'
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+# Grant necessary permissions for the workflow;
+permissions:
+  contents: write  # Allow pushing commits and tags;
+  pull-requests: write  # Allow updating pull requests;
+  actions: read  # Allow reading workflow runs;
+
+env:
+  PYTHON_VERSION: '3.11'
+  APP_NAME: 'MonkeyOCR'
+
+jobs:
+  build-and-release:
+    name: Auto Build and Release
+    runs-on: windows-latest
+
+    steps:
+    # Checkout with full history for version management;
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+        persist-credentials: true  # Keep credentials for subsequent git operations;
+
+    # Set up Python environment;
+    - name: Set up Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+        cache-dependency-path: 'requirements.txt'
+
+    # Install dependencies;
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        echo "✅ Dependencies installed"
+
+    # Get latest version from Git tags and increment;
+    - name: Calculate next version
+      id: version
+      run: |
+        # Get the latest version tag from Git history;
+        git fetch --tags --quiet
+        $latestTag = git tag -l "v*.*.*" --sort=-version:refname | Select-Object -First 1
+
+        if ([string]::IsNullOrEmpty($latestTag)) {
+          # No previous tags, start with v1.0.0;
+          $currentVersion = "1.0.0"
+          echo "No previous version tags found, starting with: $currentVersion"
+        } else {
+          # Remove 'v' prefix from tag;
+          $currentVersion = $latestTag -replace '^v', ''
+          echo "Latest version tag: $latestTag"
+          echo "Current version: $currentVersion"
+        }
+
+        # Parse version components;
+        $versionParts = $currentVersion -split '\.'
+        $major = [int]$versionParts[0]
+        $minor = [int]$versionParts[1]
+        $patch = [int]$versionParts[2]
+
+        # Determine bump type;
+        $bumpType = "${{ github.event.inputs.bump_type }}"
+        if ([string]::IsNullOrEmpty($bumpType)) {
+          # Auto-determine based on commit message;
+          $commitMessage = "${{ github.event.head_commit.message }}"
+          if ($commitMessage -match "^(feat|feature):" -or $commitMessage -match "✨") {
+            $bumpType = "minor"
+          } elseif ($commitMessage -match "^(BREAKING|breaking):" -or $commitMessage -match "💥") {
+            $bumpType = "major"
+          } else {
+            $bumpType = "patch"
+          }
+        }
+
+        # Increment version based on type;
+        switch ($bumpType) {
+          "major" {
+            $major++; $minor = 0; $patch = 0
+            echo "🚀 Major version bump"
+          }
+          "minor" {
+            $minor++; $patch = 0
+            echo "✨ Minor version bump"
+          }
+          "patch" {
+            $patch++
+            echo "🔧 Patch version bump"
+          }
+        }
+
+        $newVersion = "$major.$minor.$patch"
+        echo "New version: $newVersion"
+
+        # Output for next steps;
+        echo "current-version=$currentVersion" >> $env:GITHUB_OUTPUT
+        echo "new-version=$newVersion" >> $env:GITHUB_OUTPUT
+        echo "bump-type=$bumpType" >> $env:GITHUB_OUTPUT
+
+    # Update version.json file;
+    - name: Update version.json
+      run: |
+        $newVersion = "${{ steps.version.outputs.new-version }}"
+        $bumpType = "${{ steps.version.outputs.bump-type }}"
+
+        # Check if version.json exists, create if not;
+        if (Test-Path "version.json") {
+          $versionJson = Get-Content "version.json" -Raw | ConvertFrom-Json
+        } else {
+          # Create new version.json structure;
+          $versionJson = @{
+            version = $newVersion
+            name = "Monkey OCR for Windows"
+            description = "基于 Monkey OCR API 的 Windows 图形化工具"
+            author = "Monkey OCR Team"
+            license = "MIT"
+            python_requires = ">=3.11"
+            release_notes = @{}
+          }
+        }
+
+        # Update version number;
+        $versionJson.version = $newVersion
+
+        # Add release notes for new version;
+        $commitMessage = "${{ github.event.head_commit.message }}"
+        $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm UTC"
+
+        $releaseNotes = @(
+          "🔄 Auto-release v$newVersion ($bumpType)",
+          "📅 Built on $timestamp",
+          "📝 $commitMessage"
+        )
+
+        # Add version to release_notes;
+        if ($versionJson.release_notes.PSObject.Properties.Name -notcontains $newVersion) {
+          $versionJson.release_notes | Add-Member -MemberType NoteProperty -Name $newVersion -Value $releaseNotes
+        } else {
+          $versionJson.release_notes.$newVersion = $releaseNotes
+        }
+
+        # Save updated version.json;
+        $versionJson | ConvertTo-Json -Depth 10 | Out-File -FilePath "version.json" -Encoding utf8
+
+        echo "✅ version.json updated to $newVersion"
+
+    # Build executable;
+    - name: Build EXE with PyInstaller
+      run: |
+        echo "🔨 Building executable..."
+
+        # Clear previous builds;
+        if (Test-Path "dist") { Remove-Item -Recurse -Force "dist" }
+        if (Test-Path "build") { Remove-Item -Recurse -Force "build" }
+
+        # Build with PyInstaller;
+        pyinstaller monkey_ocr.spec --clean --noconfirm
+
+        # Verify build;
+        if (Test-Path "dist/${{ env.APP_NAME }}.exe") {
+          $fileInfo = Get-Item "dist/${{ env.APP_NAME }}.exe"
+          $sizeMB = [math]::Round($fileInfo.Length / 1MB, 2)
+          echo "✅ Build successful! Size: $sizeMB MB"
+        } else {
+          echo "❌ Build failed"
+          exit 1
+        }
+
+    # Create release artifact;
+    - name: Prepare release artifact
+      run: |
+        $version = "${{ steps.version.outputs.new-version }}"
+        $artifactName = "${{ env.APP_NAME }}-v$version-windows-x64.exe"
+
+        Copy-Item "dist/${{ env.APP_NAME }}.exe" $artifactName
+
+        echo "artifact-name=$artifactName" >> $env:GITHUB_OUTPUT
+        echo "✅ Artifact prepared: $artifactName"
+
+    # Commit version changes;
+    - name: Commit version updates
+      run: |
+        $newVersion = "${{ steps.version.outputs.new-version }}"
+
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+
+        # Pull latest changes to avoid conflicts;
+        git pull origin main
+
+        git add version.json
+        git commit -m "🔖 Bump version to v$newVersion
+
+        Auto-incremented ${{ steps.version.outputs.bump-type }} version
+
+        🤖 Generated by GitHub Actions"
+
+        git push
+
+        echo "✅ Version committed and pushed"
+
+    # Create and push tag;
+    - name: Create and push tag
+      run: |
+        $newVersion = "${{ steps.version.outputs.new-version }}"
+        $tagName = "v$newVersion"
+
+        git tag $tagName -m "Release $tagName
+
+        🚀 Auto-generated release
+        📦 Windows executable included
+        📅 $(Get-Date -Format 'yyyy-MM-dd HH:mm UTC')
+
+        🤖 Built with GitHub Actions"
+
+        git push origin $tagName
+
+        echo "tag-name=$tagName" >> $env:GITHUB_OUTPUT
+        echo "✅ Tag $tagName created and pushed"
+
+    # Upload build artifact;
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.APP_NAME }}-v${{ steps.version.outputs.new-version }}-windows-x64
+        path: ${{ env.APP_NAME }}-v${{ steps.version.outputs.new-version }}-windows-x64.exe
+        retention-days: 90
+
+    # Create GitHub Release automatically;
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ steps.version.outputs.new-version }}
+        name: ${{ env.APP_NAME }} v${{ steps.version.outputs.new-version }}
+        files: ${{ env.APP_NAME }}-v${{ steps.version.outputs.new-version }}-windows-x64.exe
+        body: |
+          ## 🚀 ${{ env.APP_NAME }} v${{ steps.version.outputs.new-version }}
+
+          ### 📦 下载
+          - **Windows (x64)**: `${{ env.APP_NAME }}-v${{ steps.version.outputs.new-version }}-windows-x64.exe`
+
+          ### 📋 更新内容
+          - 🔄 **版本类型**: ${{ steps.version.outputs.bump-type }} 更新
+          - 📝 **提交信息**: ${{ github.event.head_commit.message }}
+          - 📅 **构建时间**: $(Get-Date -Format 'yyyy-MM-dd HH:mm UTC')
+
+          ### 🛠️ 系统要求
+          - Windows 10/11 (x64)
+          - 无需安装 Python 环境
+
+          ### 🚀 使用方法
+          1. 下载 exe 文件
+          2. 双击运行即可使用
+          3. 首次运行会自动创建配置文件
+
+          ### 📞 问题反馈
+          如遇到问题，请在 [Issues](https://github.com/${{ github.repository }}/issues) 中反馈。
+
+          ---
+          *🤖 此版本由 GitHub Actions 自动构建和发布*
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Build summary;
+    - name: Build Summary
+      if: always()
+      run: |
+        echo "🎉 Auto Release Summary"
+        echo "========================"
+        echo "Previous version: ${{ steps.version.outputs.current-version }}"
+        echo "New version: ${{ steps.version.outputs.new-version }}"
+        echo "Bump type: ${{ steps.version.outputs.bump-type }}"
+        echo "Tag: v${{ steps.version.outputs.new-version }}"
+        echo "Artifact: ${{ env.APP_NAME }}-v${{ steps.version.outputs.new-version }}-windows-x64.exe"
+        echo ""
+        echo "✅ Release created successfully!"
+        echo "🔗 https://github.com/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.new-version }}"

@@ -1,0 +1,20 @@
+{
+  "license": "MIT",
+  "name": "Monkey OCR for Windows",
+  "release_notes": {
+    "1.0.1": [
+      "🔄 Auto-release v1.0.1 (patch)",
+      "📅 Built on 2025-09-26 09:18 UTC",
+      "📝 fix: clean the useless file"
+    ],
+    "1.0.2": [
+      "🔄 Auto-release v1.0.2 (patch)",
+      "📅 Built on 2025-09-26 10:40 UTC",
+      "📝 update github action"
+    ]
+  },
+  "author": "Monkey OCR Team",
+  "version": "1.0.2",
+  "python_requires": ">=3.11",
+  "description": "基于 Monkey OCR API 的 Windows 图形化工具"
+}

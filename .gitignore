@@ -1,0 +1,187 @@
+# Monkey OCR for Windows - Git Ignore File
+# ================================================
+
+# ===== Monkey OCR 特定文件 =====
+# 临时文件目录（我们新改进的临时文件管理）
+monkey_ocr_temp/
+temp_page_*.png
+.claude
+
+# 用户配置文件（可能包含API密钥等敏感信息）
+config.json
+config_local.json
+user_config.json
+.secrets
+
+# OCR处理结果和输出文件
+output/
+exports/
+results/
+processed/
+
+# 测试用的文件
+test_*.pdf
+test_*.png
+test_*.jpg
+test_*.jpeg
+sample_*
+
+# ===== Python 标准忽略 =====
+# 字节编译文件
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# 发布打包文件
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller 打包文件
+*.manifest
+
+# 虚拟环境
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# ===== IDE 和编辑器 =====
+# VS Code
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+
+# ===== 操作系统文件 =====
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+# Linux
+*~
+
+# ===== 日志和数据库文件 =====
+*.log
+*.sqlite
+*.db
+*.sqlite3
+
+# ===== 测试和覆盖率 =====
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# ===== 备份和临时文件 =====
+*.bak
+*.backup
+*.old
+*.tmp
+.tmp
+
+# ===== EXE构建文件 =====
+build/
+dist/
+*.spec
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# ===== 文档生成 =====
+/site
+docs/_build/
+
+# ===== 依赖管理 =====
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# ===== 类型检查 =====
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# ===== Jupyter Notebook =====
+.ipynb_checkpoints
+
+# ===== 其他工具 =====
+# pyenv
+.python-version
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Rope project settings
+.ropeproject
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Cython debug symbols
+cython_debug/
