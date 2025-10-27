@@ -31,6 +31,36 @@ Monkey OCR GUI 是一个基于 Monkey OCR API 的跨平台图形化工具，旨�
 - 🌍 **国际化**：中英文界面切换支持
 - 📝 **标记 PDF**：自动加载和显示 API 返回的标记 PDF
 
+## 📸 产品截图
+
+### 界面展示
+
+<div align="center">
+
+**浅色主题**
+
+![浅色主题界面](picture/show-light.png)
+
+**深色主题**
+
+![深色主题界面](picture/show-dark.png)
+
+</div>
+
+### OCR 识别
+
+<div align="center">
+
+**浅色主题 OCR**
+
+![OCR 浅色主题](picture/show-ocr-light.png)
+
+**深色主题 OCR**
+
+![OCR 深色主题](picture/show-ocr-dark.png)
+
+</div>
+
 ## 🚀 安装指南
 
 ### 系统要求

@@ -31,6 +31,36 @@ Monkey OCR GUI is a cross-platform graphical tool based on Monkey OCR API, desig
 - 🌍 **Internationalization**: Chinese and English interface switching support
 - 📝 **Marked PDF**: Automatically loads and displays marked PDFs returned by API
 
+## 📸 Screenshots
+
+### Interface Overview
+
+<div align="center">
+
+**Light Theme**
+
+![Light Theme Interface](picture/show-light.png)
+
+**Dark Theme**
+
+![Dark Theme Interface](picture/show-dark.png)
+
+</div>
+
+### OCR Recognition
+
+<div align="center">
+
+**Light Theme OCR**
+
+![OCR Light Theme](picture/show-ocr-light.png)
+
+**Dark Theme OCR**
+
+![OCR Dark Theme](picture/show-ocr-dark.png)
+
+</div>
+
 ## 🚀 Installation Guide
 
 ### System Requirements
