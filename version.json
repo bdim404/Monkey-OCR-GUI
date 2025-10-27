@@ -11,10 +11,15 @@
       "🔄 Auto-release v1.0.2 (patch)",
       "📅 Built on 2025-10-27 09:10 UTC",
       "📝 Update README"
+    ],
+    "1.0.3": [
+      "🔄 Auto-release v1.0.3 (patch)",
+      "📅 Built on 2025-10-27 09:19 UTC",
+      "📝 Add MIT License to the project"
     ]
   },
   "author": "Monkey OCR Team",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "python_requires": ">=3.11",
   "description": "基于 Monkey OCR API 的 Windows 图形化工具"
 }
