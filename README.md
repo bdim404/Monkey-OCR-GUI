@@ -280,6 +280,6 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## 🙏 Acknowledgments
 
-- [Monkey OCR API](https://github.com/yourusername/monkey-ocr-api) - Powerful OCR backend service
+- [Monkey OCR API](https://github.com/Yuliang-Liu/MonkeyOCR) - MonkeyOCR: Document Parsing with a Structure-Recognition-Relation Triplet Paradigm 
 - [CustomTkinter](https://github.com/TomSchimansky/CustomTkinter) - Modern Tkinter interface library
 - [PyMuPDF](https://github.com/pymupdf/PyMuPDF) - High-performance PDF processing library

@@ -280,6 +280,6 @@ pip install -r requirements.txt --upgrade
 
 ## 🙏 致谢
 
-- [Monkey OCR API](https://github.com/yourusername/monkey-ocr-api) - 强大的 OCR 后端服务
+- [Monkey OCR](https://github.com/Yuliang-Liu/MonkeyOCR) - 使用结构-识别-关系三元组范式进行文档解析
 - [CustomTkinter](https://github.com/TomSchimansky/CustomTkinter) - 现代化 Tkinter 界面库
 - [PyMuPDF](https://github.com/pymupdf/PyMuPDF) - 高性能 PDF 处理库
