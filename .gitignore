@@ -141,7 +141,6 @@ cover/
 # ===== EXE构建文件 =====
 build/
 dist/
-*.spec
 *.zip
 *.tar.gz
 *.rar
